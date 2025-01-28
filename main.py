@@ -6,7 +6,7 @@ import argparse
 import dotenv
 import os
 
-if __name__=="__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(prog='vargen', description='Generate variables from Notion database')
 
     parser.add_argument('-d', '--database', type=str, help='Database ID')
@@ -80,5 +80,5 @@ if __name__=="__main__":
         
     print(f"Wrote {len(db)} variables and {len(rel_db)} groups to {output}")
     
-else:
-    exit("This script is intended for command-line use only")
+if __name__=="__main__":
+    main()
