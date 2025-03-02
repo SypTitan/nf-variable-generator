@@ -6,17 +6,50 @@ GROUPS: str = 'Group Pipe IDs'
 CRASH_ON_ERROR: bool = False
 WARN_ON_ERROR: bool = True
 
+CHECK_DOUBLES: bool = True
+
 def process_single(data: list[dict]) -> dict:
+    # Processes an entire database
     out = {}
+    
+    if (CHECK_DOUBLES):
+        found_ids: set[str] = set()
     
     for i in data:
         processed: dict = row_to_dict(i)
-        if (processed != None):
-            out[processed.get(NAME)] = processed
+        if (CHECK_DOUBLES):
+            check_doubles(out, found_ids, processed)
+        
+        out[processed.get(NAME)] = processed
             
     return out
 
+def check_doubles(data: dict, col: set[str], test: dict) -> None:
+    # Checks for double ids
+    ids = test.get(INDIVIDUAL)
+    if (ids == None or len(ids) == 0):
+        return
+    
+    if (type(ids) != list):
+        ids = [ids]
+        
+    for i in ids:
+        if (i in col):
+            other = [test.get(NAME)]
+            for j in data.values():
+                other_ids = j.get(INDIVIDUAL)
+                if (type(other_ids) == str and other_ids == i):
+                    other.append(j.get(NAME))
+                elif (type(other_ids) == list and i in other_ids):
+                    other.append(j.get(NAME))
+            if (CRASH_ON_ERROR):
+                raise ValueError(f"Found a double individual ID: '{i}'.\nUsed for {other}")
+            elif (WARN_ON_ERROR):
+                print(f"Found a double individual ID: '{i}'.\nUsed for {other}")
+        col.add(i)
+
 def row_to_dict(row: dict) -> dict:
+    # Processes a single line
     data: dict = row.get('properties')
     
     if (data == None):
@@ -34,6 +67,7 @@ def row_to_dict(row: dict) -> dict:
     return out
         
 def process(data: dict) -> str|list[str]:
+    # Processes a single field
     if ('type' not in data.keys()):
         print("Found keys:" + str(data.keys()))
         if (CRASH_ON_ERROR):
@@ -72,6 +106,7 @@ def process(data: dict) -> str|list[str]:
         
 
 def process_relations(data: list[dict]) -> dict:
+    # Processes an entire database to a dict
     out: dict = {}
     
     for i in data:
@@ -82,16 +117,19 @@ def process_relations(data: list[dict]) -> dict:
     return out
     
 def row_to_relation(row: dict) -> tuple[str, str]:
+    # Processes a single row to a name/id tuple
     name: str = process(row.get('properties').get('Name'))
     id: str = row.get('id')
     
     return (id, name)
 
 def reference_groups(data: dict, relations: dict) -> None:
+    # Connects an entire database of relations
     for i in data:
         reference_group_row(data[i], relations)
 
 def reference_group_row(row: dict, relations: dict) -> None:
+    # Connects a single row of data to the relevant relations
     new_groups: list[str] = []
     for i in row.get(GROUPS):
         new_groups.append(relations.get(i))
@@ -99,6 +137,7 @@ def reference_group_row(row: dict, relations: dict) -> None:
     row[GROUPS] = new_groups
 
 def generate_individual(data: dict[str, list]) -> list[tuple[str, str]]:
+    # I don't even know what this does
     assert(ID in data.keys() and INDIVIDUAL in data.keys())
     assert(len(data[ID]) == len(data[INDIVIDUAL]))
     
@@ -110,6 +149,7 @@ def generate_individual(data: dict[str, list]) -> list[tuple[str, str]]:
     return out
 
 def process_full(data: list[dict], relations: list[dict]) -> dict[str, dict[str, str|list[str]]]:
+    # Turns 2 tables into one nice mapped database
     db: dict[str, dict[str, str|list[str]]] = process_single(data)
     rel_db: dict = process_relations(relations)
     

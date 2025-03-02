@@ -1,6 +1,6 @@
 from variableprocessor import ID, INDIVIDUAL, GROUPS
 
-def generate_individuals(data: dict[str, dict[str, str|list[str]]], line_start: str = "\t") -> str:
+def generate_individuals(data: dict[str, dict[str, str|list[str]]], line_start: str = "  ") -> str:
     out: str = ""
     
     for i in data:
@@ -14,7 +14,7 @@ def generate_individuals(data: dict[str, dict[str, str|list[str]]], line_start: 
         
     return out
 
-def generate_groups(data: dict[str, dict[str, str|list[str]]], line_start: str = "\t") -> str:    
+def generate_groups(data: dict[str, dict[str, str|list[str]]], line_start: str = "  ") -> str:    
     out: str = ""
     
     groups: dict[str, list[str]] = group_data(data)
@@ -39,9 +39,9 @@ def generate_output(data: dict[str, dict[str, str|list[str]]]) -> str:
     out: str = ""
     
     out += 'variables:\n'
-    out += '# Individual variables\n'
+    out += '  # Individual variables\n'
     out += generate_individuals(data)
-    out += '\n# Group variables\n'
+    out += '\n  # Group variables\n'
     out += generate_groups(data)
     
     return out

@@ -1,3 +1,6 @@
+# Stupid vscode workspace
+.vscode
+
 # Sample output
 *.yml
 *.yaml
